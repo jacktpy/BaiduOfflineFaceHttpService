@@ -1,0 +1,3 @@
+1、购买序列号  或  申请测试序列号
+2、双击LicenseTool.exe   获取硬件指纹   输入序列号 激活
+3、在百度后台输入硬件指纹  激活   下载license.zip  替换license.ini,license.key 即可

@@ -1,0 +1,23 @@
+## 总体服务器的配置
+server:
+  port: 58080
+  servlet:
+    context-path: /baidu-face-service
+    application-display-name: baidu-face-service
+    session:
+      # 会话过期时间，单位：秒，0代表永不过期
+      timeout: 0
+
+  ## cpu是多少核就写多少
+  undertow:
+    ## 根据实际负载加上操作系统最大线程数进行调整
+    io-threads: 4
+    ## 一般来说如4核8G的机器可以设置到1000
+    worker-threads: 1000
+
+#spring
+spring:
+  devtools:
+    restart:
+      enabled: false
+
