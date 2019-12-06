@@ -11,6 +11,10 @@
 3、如需其他接口  还需自行开发
 
 部署：
+下载 window java版本的sdk  解压到 项目的根目录下
+sdk下载地址  https://console.bce.baidu.com/ai/?_=1575597682660&fromai=1#/ai/face/offline/index
+
+
 1、开发环境直接启动 springboot 的 BaiduFaceHttpServiceApplication即可
 
 2、生成环境部署
