@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.huang</groupId>
+    <groupId>com.jackTpy</groupId>
     <artifactId>baiduFaceHttpService</artifactId>
     <version>1.0</version>
 
@@ -16,7 +16,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.huang</groupId>
+            <groupId>com.jackTpy</groupId>
             <artifactId>opencv-320</artifactId>
            <scope>system</scope>
             <version>1</version>
@@ -87,7 +87,7 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
-                    <mainClass>com.huang.BaiduFaceHttpServiceApplication</mainClass>
+                    <mainClass>com.jackTpy.BaiduFaceHttpServiceApplication</mainClass>
                     <executable>true</executable>
                 </configuration>
             </plugin>

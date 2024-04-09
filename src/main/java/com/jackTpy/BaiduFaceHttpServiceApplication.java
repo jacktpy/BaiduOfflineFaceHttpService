@@ -1,13 +1,10 @@
-package com.huang;
+package com.jackTpy;
 
 import com.jni.face.Face;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-/**
- * @Author huangsq
- * @Date 2019/12/5 10:33
- */
+
 @SpringBootApplication
 public class BaiduFaceHttpServiceApplication {
 

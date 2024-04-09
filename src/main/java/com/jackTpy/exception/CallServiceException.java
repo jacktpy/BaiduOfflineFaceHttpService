@@ -1,4 +1,4 @@
-package com.huang.exception;
+package com.jackTpy.exception;
 
 /**
  * 调用服务异常

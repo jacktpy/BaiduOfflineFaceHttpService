@@ -1,8 +1,8 @@
-package com.huang.controller;
+package com.jackTpy.controller;
 
 import cn.hutool.core.codec.Base64;
 import cn.hutool.core.io.FileUtil;
-import com.huang.bean.WebResult;
+import com.jackTpy.bean.WebResult;
 import com.jni.face.Face;
 import com.jni.struct.FeatureInfo;
 import org.opencv.core.Mat;

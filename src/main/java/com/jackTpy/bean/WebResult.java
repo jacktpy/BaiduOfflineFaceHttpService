@@ -1,4 +1,4 @@
-package com.huang.bean;
+package com.jackTpy.bean;
 
 import java.io.Serializable;
 

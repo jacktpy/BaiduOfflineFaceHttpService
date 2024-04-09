@@ -1,7 +1,7 @@
-package com.huang.config;
+package com.jackTpy.config;
 
 import com.alibaba.fastjson.JSONException;
-import com.huang.bean.WebResult;
+import com.jackTpy.bean.WebResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
