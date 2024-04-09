@@ -4,9 +4,13 @@ import org.opencv.core.Mat;
 import org.opencv.core.MatOfByte;
 import org.opencv.imgcodecs.Imgcodecs;
 
-// 对图片进行base64编码解码类
+/**
+ * 
+ * @ 对图片进行base64编码解码类
+ *
+ */
 public class ImageBase64 {
-    static String  base64_chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    static String  base64Chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
     public static boolean isBase64(byte c) {
         return (Character.isDigit(c) || (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c == '+') || (c == '/'));
@@ -112,7 +116,9 @@ public class ImageBase64 {
         }
         return strDecode;            
     }
-    // 传入图片地址进行base64编码示例
+    /*
+    * 传入图片地址进行base64编码示例
+    */
     public static String file2base64(String filePath) {
         Mat mat = Imgcodecs.imread("d:/2.jpg");
         long matAddr = mat.getNativeObjAddr();

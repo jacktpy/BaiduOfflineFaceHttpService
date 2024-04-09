@@ -1,105 +1,20 @@
 package com.jni.face;
 
 import org.opencv.core.*;
-import org.opencv.core.Point;
 import org.opencv.imgproc.Imgproc;
-import org.opencv.videoio.VideoCapture;
 
-import java.awt.*;
 import java.awt.image.BufferedImage;
 
+/**
+ * 
+ * @绘制类
+ *
+ */
 public class ShowVideo {
 
     static {
-        System.loadLibrary("./opencv-dll/opencv_java320");
-    }
-
-    public void show(FaceLivenessTrackType type) {
-        System.loadLibrary("./opencv-dll/opencv_java320");
-
-        // 打开摄像头或者视频文件
-        VideoCapture capture = new VideoCapture();
-        capture.open(0);
-
-        if (!capture.isOpened()) {
-            System.out.println("could not load video data...");
-            return;
-        }
-        int frameWidth = (int) capture.get(3);
-        int frameHeight = (int) capture.get(4);
-        ImageGUI gui = new ImageGUI();
-        gui.createWin("video", new Dimension(frameWidth, frameHeight));
-        Mat frame = new Mat();
-        while (true) {
-            boolean have = capture.read(frame);
-            Core.flip(frame, frame, 1); // Win上摄像头
-            if (!have) {
-                break;
-            }
-            if (!frame.empty()) {
-                RotatedRect box;
-                int maxTrackObjNum = 3;
-                switch (type) {
-                    case TRACKBYMAT: {
-                        long matAddr = frame.getNativeObjAddr();
-                        TrackFaceInfo[] out = Face.trackByMat(matAddr, maxTrackObjNum);
-                        for (int index = 0; index < out.length; index++) {
-                            box = boundingBox(out[index].landmarks, out[index].landmarks.length);
-                            drawRotatedBox(frame, box, new Scalar(0, 255, 0));
-                        }
-                        break;
-                    }
-                    // case IRLIVENESSCHECKBYMAT:
-                    // break;
-                    // 双目RGB和IR静脉活体检测(传入opencv的视频帧)
-                    // case RGBIRLIVENESSCHECK:
-                    // res = Face.rgbIrLivenessCheck(long rgb_mat, long ir_mat,
-                    // float rgb_score, float ir_score);
-                    // System.out.println("rgbIrLivenessCheck res :"+res);
-                    // break;
-                    // 双目RGB和IR静脉活体检测(传入opencv的视频帧,返回rgb视频帧人脸信息)
-                    // case RGBIRLIVENESSCHECKREINFO:
-                    // res = Face.rgbIrLivenessCheckReInfo(TrackFaceInfo[] out, long rgb_mat, long ir_mat,
-                    // float rgb_score, float ir_score);
-                    // break;
-                    // case RGBLIVENESSCHECKBYMAT:
-                    // break;
-                    // 双目RGB和depth静脉活体检测(传入opencv的视频帧)
-                    // case RGBDEPTHLIVENESSCHECK:
-                    // res = Face.rgbDepthLivenessCheck(long rgb_mat, long depth_mat,
-                    // float rgb_score, float depth_score);
-                    // break;
-                    // 双目RGB和depth静脉活体检测(传入opencv的视频帧,返回rgb视频帧人脸信息)
-                    // case RGBDEPTHLIVENESSCHECKREINFO:
-                    // res = Face.rgbDepthLivenessCheckReInfo(TrackFaceInfo[] out, long rgb_mat, long depth_mat,
-                    // float rgb_score, float depth_score);
-                    // break;
-                    // case GETFACEFEATUREBYMAT:
-                    // break;
-                    // 获取人脸特征值（传入opencv视频帧及人脸信息，适应于多人脸）
-                    case GETFACEFEATUREBYFACE: {
-                        /*
-                         * float[] fea = new float[512]; long matAddr1 = frame.getNativeObjAddr(); TrackFaceInfo[] out1
-                         * = Face.trackByMat(matAddr1, maxTrackObjNum); for (int index = 0; index < out1.length; index
-                         * ++) { int dimcount = Face.getFaceFeatureByFace(matAddr1, out1[index], fea); }
-                         */
-                        break;
-                    }
-                    default:
-                        break;
-                }
-
-                gui.imshow(conver2Image(frame));
-                gui.repaint();
-            }
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
+        System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+    }    
     public static RotatedRect boundingBox(int[] landmarks, int size) {
         int minX = 1000000;
         int minY = 1000000;

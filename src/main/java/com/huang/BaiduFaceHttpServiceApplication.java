@@ -17,13 +17,26 @@ public class BaiduFaceHttpServiceApplication {
 
 
     static {
-        // sdk初始化
+        /*  sdk初始化 */
         Face api = new Face();
-        // 初始化sdk
-        // 若采用证件照模式，请把id_card设为true，否则为false，证件照模式和非证件照模式提取的人脸特征值不同，
-        // 不能混用
-        boolean idCard = true;
-        api.sdkInit(idCard);
+        // model_path为模型文件夹路径，即models文件夹（里面存的是人脸识别的模型文件）
+        // 传空为采用默认路径，若想定置化路径，请填写全局路径如：d:\\face （models模型文件夹目录放置后为d:\\face\\models）
+        // 若模型文件夹采用定置化路径，则激活文件(license.ini, license.key)也可采用定制化路径放置到该目录如d:\\face\\license
+        // 亦可在激活文件默认生成的路径
+        String modelPath ="";
+        // String modelPath ="d:\\face";
+        int res = api.sdkInit(modelPath);
+        if (res != 0) {
+            System.out.printf("sdk init fail and error =%d\n", res);
+        }else {
+            System.out.println("sdk init success");
+        }
+        // 获取设备指纹
+        String deviceId = Face.getDeviceId();
+        System.out.println("device id:" + deviceId);
+        // 获取版本号
+        String ver = Face.sdkVersion();
+        System.out.println("sdk version:" + ver);
     }
 
 }

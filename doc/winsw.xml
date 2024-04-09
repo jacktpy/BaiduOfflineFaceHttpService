@@ -4,7 +4,7 @@
     <name>百度离线sdk http服务</name>
     <description>百度离线sdk http服务</description>
 
-    <env name="BAT_HOME" value="C:\Users\huangsq\Desktop\baidu-face-http-service"/>
+    <env name="BAT_HOME" value="C:\Users\tian8\IdeaProjects\baiduFaceHttpService"/>
     
     <logpath>%BAT_HOME%/</logpath>
     <logmode>roll</logmode>

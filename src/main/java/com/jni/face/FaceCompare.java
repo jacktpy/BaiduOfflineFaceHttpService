@@ -1,48 +1,79 @@
 package com.jni.face;
 
+import com.jni.struct.FaceBox;
+import com.jni.struct.Feature;
+import com.jni.struct.FeatureInfo;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
-import org.opencv.core.RotatedRect;
-import org.opencv.core.Scalar;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.videoio.VideoCapture;
 
 import java.awt.*;
 
+/**
+ * 
+ * @ 人脸比对及特征值示例
+ *
+ */
 public class FaceCompare {
+    
     public void testFaceCompare() {
-        // 测试获取特征值
-        // testFaceFeature();
-        // 测试人脸比对
-         testFaceMatch();
+        // 通过图片帧进行人脸1:1比对  
+         imageMatch();
+        // 通过特征值进行人脸1:1比对        
+         imageFaceMatch();
+         // 通过提取图片的特征值和视频帧提取特征值实时比对
+        // videoFaceMatch();
         // 测试人脸1：N识别(和预加载的库比较)
-        // testFaceIdentifyWithDB();
+        // faceIdentifyWithDb();
         // 测试人脸1：N识别(和实时查找的库比较)
-       //  testFaceIdentify();
-        // 测试人脸比对(图片和视频帧比对)
-      //  testFaceMatchByImgAndFrame();
+        // faceIdentify();        
+    }
+    // 通过图片帧1:1对比
+    public void imageMatch() {
+        Mat mat1 = Imgcodecs.imread("images/1.jpg");
+        long mat1Addr = mat1.getNativeObjAddr();        
+        // 获取第二个人的特征值
+        Mat mat2 = Imgcodecs.imread("images/2.jpg");
+        long mat2Addr = mat2.getNativeObjAddr();
+        // type 0： 表示rgb生活照特征值，1:表示rgb证件照特征值 2：表示nir近红外特征值
+        int type = 0;    
+        float score =  Face.match(mat1Addr, mat2Addr, type);
+        System.out.println("face match score is:" + score);
     }
 
-    // 1:1人脸比对比接口
-    public void testFaceMatch() {
-        // 通过图片文件路径对比
-        String res = Face.match("C:\\Users\\huangsq\\Desktop\\jianhongface\\1.jpg", "C:\\Users\\huangsq\\Desktop\\jianhongface\\4.jpg");
-        System.out.println("path match is:" + res);
-
-        // 人脸对比（传入opencv视频帧）
-        Mat mat1 = Imgcodecs.imread("C:\\Users\\huangsq\\Desktop\\jianhongface\\1.jpg");
-        Mat mat2 = Imgcodecs.imread("C:\\Users\\huangsq\\Desktop\\jianhongface\\4.jpg");
-
-        long matAddr1 = mat1.getNativeObjAddr();
-        long matAddr2 = mat2.getNativeObjAddr();
-        res = Face.matchByMat(matAddr1, matAddr2);
-        System.out.println("mat match is:" + res);
+    // 1:1人脸比对比接口 (通过特征值比对)
+    public void imageFaceMatch() {
+        // 获取第一个人的特征值
+        Mat mat1 = Imgcodecs.imread("images/1.jpg");
+        long mat1Addr = mat1.getNativeObjAddr();
+        // type 0： 表示rgb生活照特征值，1:表示rgb证件照特征值 2：表示nir近红外特征值
+        int type = 0;
+        FeatureInfo[] fea1List = Face.faceFeature(mat1Addr, type);
+        if (fea1List == null || fea1List.length <= 0) {
+            System.out.println("get feature fail");
+            return;
+        }
+        
+        // 获取第二个人的特征值
+        Mat mat2 = Imgcodecs.imread("images/2.jpg");
+        long mat2Addr = mat2.getNativeObjAddr();
+        // type 0： 表示rgb生活照特征值，1:表示rgb证件照特征值 2：表示nir近红外特征值
+        FeatureInfo[] fea2List = Face.faceFeature(mat2Addr, type);
+        if (fea2List == null || fea2List.length <= 0) {
+            System.out.println("get feature fail");
+            return;
+        }
+        Feature f1 = fea1List[0].feature;
+        Feature f2 = fea2List[0].feature;        
+        float score =  Face.compareFeature(f1, f2, type);
+        System.out.println("face match score is:" + score);
 
     }
 
     // 图片和视频帧比对
-    public void testFaceMatchByImgAndFrame() {
-        System.loadLibrary("./opencv-dll/opencv_java320");
+    public void videoFaceMatch() {
+        System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 
         // 打开摄像头或者视频文件
         // device为0默认打开笔记本电脑自带摄像头，若为0打不开外置usb摄像头
@@ -58,38 +89,38 @@ public class FaceCompare {
         int frameHeight = (int) capture.get(4);
         ImageGUI gui = new ImageGUI();
         gui.createWin("video", new Dimension(frameWidth, frameHeight));
-        Mat frame = new Mat();
+        Mat mat1 = Imgcodecs.imread("images/1.jpg");
+        long mat1Addr = mat1.getNativeObjAddr();
+        // type 0： 表示rgb生活照特征值，1:表示rgb证件照特征值 2：表示nir近红外特征值
+        int type = 0;
         // 提取要比对的图片特征值
-        byte[] features = Face.getFaceFeature("d:/2.jpg");
-        int index = 0;
+        FeatureInfo[] feaList1 = Face.faceFeature(mat1Addr, type);
+        Feature fea1 = feaList1[0].feature;
+      
+        Mat frame = new Mat();
         while (true) {
             boolean have = capture.read(frame);
             Core.flip(frame, frame, 1); // Win上摄像头
             if (!have) {
                 break;
             }
-            if (!frame.empty()) {
-                RotatedRect box;
-
+            if (!frame.empty()) {              
                 long matAddr = frame.getNativeObjAddr();
-                TrackFaceInfo info = Face.trackMaxByMat(matAddr);
-                if (info != null) {
-                    box = ShowVideo.boundingBox(info.landmarks, info.landmarks.length);
-                    ShowVideo.drawRotatedBox(frame, box, new Scalar(0, 255, 0));
-                    index++;
-                    if (index >= 5) {
-                        // 提取视频帧的特征值
-                        byte[] feaMat = Face.getFaceFeatureByFace(matAddr, info);
-                        // 特征值为2048个byte,此处可设置为每5帧比对一次，否则，每次都比对可能导致视频卡顿
-                        if (features.length == 2048 && feaMat.length == 2048) {
-                            float score = Face.compareFeature(features, features.length, feaMat, feaMat.length);
-                            System.out.println("compare score is:" + score);
-                        }
-                        index = 0;
-                    }
+                // 提取要比对的图片特征值
+                FeatureInfo[] feaList = Face.faceFeature(matAddr, type);
+                
+                if (feaList != null && feaList.length > 0) {
+                    // 获取特征值
+                    Feature fea = feaList[0].feature;
+                    // 人脸比对
+                    float score = Face.compareFeature(fea1, fea, type);
+                    System.out.println("compare score is:" + score);
+                    FaceBox box = feaList[0].box;
+                    // 绘制人脸框
+                    FaceDraw.drawRects(frame, box);
                 }
-
                 gui.imshow(ShowVideo.conver2Image(frame));
+                
                 gui.repaint();
             }
             try {
@@ -97,111 +128,70 @@ public class FaceCompare {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-        }
+        } 
     }
 
-    // 1:N比对(1和库里的N比对，库为比对时候实时查找)
-    public void testFaceIdentify() {
-        // 传入文件路径
-        String res = Face.identify("d:/2.jpg", "test_group", "test_user1", 100);
-        System.out.println("identify res is:" + res);
-
-        // 人脸识别(传入opencv视频帧)
-        Mat mat = Imgcodecs.imread("d:\\2.jpg");
-        long matAddr = mat.getNativeObjAddr();
-        res = Face.identifyByMat(matAddr, "test_group", "test_user1", 100);
-        System.out.println("identifyByMat res is:" + res);
-
-        // 人脸识别(传入二进制图片buf)
-        byte[] outBuf = ImageBuf.getImageBuffer("d:\\1.jpg");
-
-        res = Face.identifyByBuf(outBuf, outBuf.length, "test_group", "test_user1", 100);
-        System.out.println("identifyByBuf res is:" + res);
-
-        // 人脸识别(传入特征值feature)
-        Mat mat3 = Imgcodecs.imread("d:\\2.jpg");
-        long matAddr3 = mat3.getNativeObjAddr();
-        byte[] features = Face.getFaceFeatureByMat(matAddr3);
-        res = Face.identifyByFeature(features, features.length, "test_group", "test_user1", 100);
-        System.out.println("identifyByFeature res is:" + res);
-
+ // 1:N比对(传图片帧和库里的N比对，库为比对时候实时查找,人脸库参考FaceManager)
+    public void faceIdentifyByMat() {
+         Mat mat1 = Imgcodecs.imread("images/1.jpg");
+         long mat1Addr = mat1.getNativeObjAddr();
+         // type 0： 表示rgb生活照特征值，1:表示rgb证件照特征值 2：表示nir近红外特征值
+         int type = 0;
+         // 用户id，可自定义
+         String userId = "user";
+         // 组id，可自定义
+         String groupId = "group";
+         // 和人脸库里面的人脸特征值比较（人脸识别）
+         String res = Face.identifyByMat(mat1Addr, groupId, userId, type);     
+         System.out.println("identify res is:" + res);
+    }
+    
+    // 1:N比对(传特征值和库里的N比对，库为比对时候实时查找,人脸库参考FaceManager)
+    public void faceIdentify() {
+         Mat mat1 = Imgcodecs.imread("images/1.jpg");
+         long mat1Addr = mat1.getNativeObjAddr();
+         // type 0： 表示rgb生活照特征值，1:表示rgb证件照特征值 2：表示nir近红外特征值
+         int type = 0;
+         // 提取要比对的图片特征值
+         FeatureInfo[] feaList1 = Face.faceFeature(mat1Addr, type);
+         Feature fea1 = feaList1[0].feature;
+         // 用户id，可自定义
+         String userId = "user";
+         // 组id，可自定义
+         String groupId = "group";
+         // 和人脸库里面的人脸特征值比较（人脸识别）
+         String res = Face.identify(fea1, groupId, userId, type);     
+         System.out.println("identify res is:" + res);
     }
 
-    // 1:N比对(1和库里的N比对，库为比对时候先提前加载)
-    public void testFaceIdentifyWithDB() {
-        // 和整个库比较，需要提前加载库里数据到内存
+    // 1:N比对(传图片帧和库里的N比对，库为比对时候先提前加载,人脸库参考FaceManager)
+    public void faceIdentifyWithDbByMat() {
+        // 提前加载数据库（和全库比较，所以可先把全部库加载到内存,和全库比较，该句必须先调用）
         Face.loadDbFace();
-        // 传入文件路径
-        String res = Face.identifyDB("d:/1.jpg", 100);
-        System.out.println("identifyDB res is:" + res);
-
-        // 人脸识别(传入opencv视频帧)
-        Mat mat = Imgcodecs.imread("d:\\1.jpg");
-        long matAddr = mat.getNativeObjAddr();
-        res = Face.identifyByMatDB(matAddr, 100);
-        System.out.println("identifyByMatDB res is:" + res);
-
-        // 人脸识别(传入二进制图片buf)
-        byte[] outBuf = ImageBuf.getImageBuffer("d:\\1.jpg");
-
-        res = Face.identifyByBufDB(outBuf, outBuf.length, 100);
-        System.out.println("identifyByBufDB res is:" + res);
-
-        // 人脸识别(传入特征值feature)
-        Mat mat3 = Imgcodecs.imread("d:\\1.jpg");
-        long matAddr3 = mat3.getNativeObjAddr();
-        byte[] features = Face.getFaceFeatureByMat(matAddr3);
-        res = Face.identifyByFeatureDB(features, features.length, 100);
-        System.out.println("identifyByFeatureDB res is:" + res);
-
-    }
-
-    // 特征值比较
-    public void testFaceFeature() {
-
-        // 获取人脸特征值(传入图片)
-        byte[] fea = Face.getFaceFeature("d:\\1.jpg");
-        if (fea == null || fea.length != 2048) {
-            System.out.println("get feature error");
-        }
-        // 获取人脸特征值(传入opencv视频帧)
-        Mat mat3 = Imgcodecs.imread("d:\\2.jpg");
-        long matAddr3 = mat3.getNativeObjAddr();
-        byte[] feaMat = Face.getFaceFeatureByMat(matAddr3);
-        if (feaMat == null || feaMat.length != 2048) {
-            System.out.println("get feature error");
-        }
-        // 获取人脸特征值(传入二进制图片buf)
-        byte[] outBuf = ImageBuf.getImageBuffer("d:\\1.jpg");
-        byte[] feaBuf = Face.getFaceFeatureByBuf(outBuf, outBuf.length);
-        if (feaBuf == null || feaBuf.length != 2048) {
-            System.out.println("get feature error");
-        }
-        // 特征值比对
-
-        Mat m1 = Imgcodecs.imread("d:\\1.jpg");
-        long mAddr1 = m1.getNativeObjAddr();
-        if (m1.empty()) {
-            System.out.println("mat1 is empty,please check img path");
-        }
-        byte[] fea1 = Face.getFaceFeatureByMat(mAddr1);
-        if (fea1 == null || fea1.length != 2048) {
-            System.out.println("get feature1 error");
-            return;
-        }
-
-        Mat m2 = Imgcodecs.imread("d:\\2.jpg");
-        if (m2.empty()) {
-            System.out.println("mat2 is empty,please check img path");
-        }
-        long mAddr2 = m2.getNativeObjAddr();
-        byte[] fea2 = Face.getFaceFeatureByMat(mAddr2);
-        if (fea2 == null || fea2.length != 2048) {
-            System.out.println("get feature2 error");
-            return;
-        }
-        float score = Face.compareFeature(fea1, fea1.length, fea2, fea2.length);
-        System.out.println("compare score is:" + score);
-
-    }
+        // 提取第一个人脸特征值
+        Mat mat1 = Imgcodecs.imread("images/1.jpg");
+        long mat1Addr = mat1.getNativeObjAddr();
+        // type 0： 表示rgb生活照特征值，1:表示rgb证件照特征值 2：表示nir近红外特征值
+        int type = 0;
+        // 和人脸库里面的人脸特征值比较（人脸识别）
+        String res = Face.identifyWithAllByMat(mat1Addr, type);     
+        System.out.println("identify res is:" + res);
+    }  
+    
+    // 1:N比对(传特征值和库里的N比对，库为比对时候先提前加载,人脸库参考FaceManager)
+    public void faceIdentifyWithDb() {
+        // 提前加载数据库（和全库比较，所以可先把全部库加载到内存,和全库比较，该句必须先调用）
+        Face.loadDbFace();
+        // 提取第一个人脸特征值
+        Mat mat1 = Imgcodecs.imread("images/1.jpg");
+        long mat1Addr = mat1.getNativeObjAddr();
+        // type 0： 表示rgb生活照特征值，1:表示rgb证件照特征值 2：表示nir近红外特征值
+        int type = 0;
+        // 提取要比对的图片特征值
+        FeatureInfo[] feaList1 = Face.faceFeature(mat1Addr, type);
+        Feature fea1 = feaList1[0].feature;
+        // 和人脸库里面的人脸特征值比较（人脸识别）
+        String res = Face.identifyWithAll(fea1, type);     
+        System.out.println("identify res is:" + res);
+    }   
 }
